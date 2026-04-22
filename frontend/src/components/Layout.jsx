@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Receipt, LogOut, Wallet, User, Moon, Sun, Tags, CreditCard, PiggyBank, Bell } from 'lucide-react';
+import { LayoutDashboard, Receipt, LogOut, Wallet, User, Moon, Sun, Tags, CreditCard, PiggyBank, Bell, Sparkles } from 'lucide-react';
 import api from '../api';
 
 export default function Layout() {
@@ -87,6 +87,9 @@ export default function Layout() {
                                 marginLeft: 'auto'
                             }}>{unreadCount}</span>
                         )}
+                    </Link>
+                    <Link to="/ai-chat" style={{...navLinkStyle, position: 'relative'}}>
+                        <Sparkles size={20} /> AI Maslahatchi
                     </Link>
                     <Link to="/profile" style={navLinkStyle}>
                         <User size={20} /> Profil

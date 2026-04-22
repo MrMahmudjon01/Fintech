@@ -45,6 +45,11 @@ export default function Notifications() {
         switch(type) {
             case 'REMINDER': return <AlertCircle size={20} color="var(--accent)" />;
             case 'AI': return <Info size={20} color="var(--primary)" />;
+            case 'EXPENSE_WARNING':
+            case 'EXPENSE_SPIKE': 
+                return <AlertCircle size={20} color="var(--danger)" />;
+            case 'SAVINGS_LOW': return <Bell size={20} color="#f59e0b" />;
+            case 'LOAN_DUE': return <Bell size={20} color="var(--primary)" />;
             default: return <Bell size={20} color="var(--text-muted)" />;
         }
     };

@@ -171,11 +171,6 @@ class Loan(SoftDeleteModel):
         ('ACTIVE', 'Active'),
         ('SETTLED', "Settled (To'landi)"),
     )
-    DESTINATION_CHOICES = (
-        ('MAIN', 'Main Balance'),
-        ('SAVINGS', 'Savings Account'),
-    )
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -189,18 +184,6 @@ class Loan(SoftDeleteModel):
     due_date = models.DateField(null=True, blank=True)
     date = models.DateField(default=timezone.now)
     note = models.TextField(blank=True, null=True)
-
-    # Where does the loan money go/come from?
-    destination = models.CharField(
-        max_length=20, choices=DESTINATION_CHOICES, default='MAIN',
-        help_text="When loan is taken, where to route the money."
-    )
-    destination_savings = models.ForeignKey(
-        Savings, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='linked_loans',
-        help_text="If destination is SAVINGS, which savings account."
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

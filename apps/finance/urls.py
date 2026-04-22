@@ -4,6 +4,7 @@ from .views import (
     MainBalanceViewSet, CategoryViewSet, TransactionViewSet,
     LoanViewSet, SavingsViewSet, GoalViewSet, NotificationViewSet,
 )
+from .ai_views import AIChatView
 
 router = DefaultRouter()
 router.register(r'balance', MainBalanceViewSet, basename='balance')
@@ -15,5 +16,6 @@ router.register(r'goals', GoalViewSet, basename='goal')
 router.register(r'notifications', NotificationViewSet, basename='notification')
 
 urlpatterns = [
+    path('ai-chat/', AIChatView.as_view(), name='ai-chat'),
     path('', include(router.urls)),
 ]

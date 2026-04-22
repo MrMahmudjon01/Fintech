@@ -32,9 +32,9 @@ class GoalAdmin(admin.ModelAdmin):
 
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ('person_name', 'user', 'direction', 'amount', 'amount_paid', 'status', 'due_date', 'destination', 'is_deleted')
+    list_display = ('person_name', 'user', 'direction', 'amount', 'amount_paid', 'status', 'due_date', 'is_deleted')
     search_fields = ('person_name', 'user__phone_number')
-    list_filter = ('direction', 'status', 'destination', 'is_deleted', 'created_at')
+    list_filter = ('direction', 'status', 'is_deleted', 'created_at')
     readonly_fields = ('created_at', 'updated_at')
 
 

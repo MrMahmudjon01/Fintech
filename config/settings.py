@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 ]
 
 # Telegram settings
-TELEGRAM_BOT_TOKEN = '8148619121:AAE1ICzNmdlBj9XiaMdI-m1UtOr50oS0qYQ'
+TELEGRAM_BOT_TOKEN = '8765947355:AAFUZUQF2S3gEXR4V56mHSua7xRo3gmZx8M'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,8 +67,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'finai',      # Yuqorida yaratilgan baza nomi
+        'USER': 'superuser',    # Yuqorida yaratilgan user
+        'PASSWORD': 'finAI123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -104,6 +108,11 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-gemini-key",
+]
+
 # Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
@@ -122,3 +131,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jshoxruh05@gmail.com'
 EMAIL_HOST_PASSWORD = 'eecn bxnd cnlt bupz'
+
+# Telegram Bot Token
+TELEGRAM_BOT_TOKEN = '8765947355:AAFUZUQF2S3gEXR4V56mHSua7xRo3gmZx8M'
+
+# Gemini AI — Default API key (har bir user o'z kalitini ham qo'sha oladi)
+GEMINI_API_KEY = 'AIzaSyCP5maitknYzuJlFyYUezRLy-Eys63J8MI'

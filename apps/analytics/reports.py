@@ -20,37 +20,41 @@ class MainBalanceReport:
         week_start = target_date - timedelta(days=target_date.weekday())
         week_end = week_start + timedelta(days=6)
 
-        daily = Transaction.objects.filter(
-            user=user,
-            date__gte=week_start,
-            date__lte=week_end,
-        ).annotate(
-            day=TruncDate('date')
-        ).values('day').annotate(
-            income=Sum('amount', filter=Q(type='INCOME')),
-            expense=Sum('amount', filter=Q(type='EXPENSE')),
-            savings_deposit=Sum('amount', filter=Q(type='SAVINGS_DEPOSIT')),
-            savings_withdraw=Sum('amount', filter=Q(type='SAVINGS_WITHDRAW')),
-            loan_in=Sum('amount', filter=Q(type='LOAN_IN')),
-            loan_out=Sum('amount', filter=Q(type='LOAN_OUT')),
-            loan_repay=Sum('amount', filter=Q(type='LOAN_REPAY')),
-        ).order_by('day')
+        txs = Transaction.objects.filter(
+            user=user, date__gte=week_start, date__lte=week_end, is_deleted=False
+        )
+
+        daily_data = {}
+        for t in txs:
+            day = t.date
+            if day not in daily_data:
+                daily_data[day] = {
+                    'income': 0, 'expense': 0, 'savings_deposit': 0, 
+                    'savings_withdraw': 0, 'loan_in': 0, 'loan_out': 0, 'loan_repay': 0
+                }
+            if t.type == 'INCOME': daily_data[day]['income'] += t.amount
+            elif t.type == 'EXPENSE': daily_data[day]['expense'] += t.amount
+            elif t.type == 'SAVINGS_DEPOSIT': daily_data[day]['savings_deposit'] += t.amount
+            elif t.type == 'SAVINGS_WITHDRAW': daily_data[day]['savings_withdraw'] += t.amount
+            elif t.type == 'LOAN_IN': daily_data[day]['loan_in'] += t.amount
+            elif t.type == 'LOAN_OUT': daily_data[day]['loan_out'] += t.amount
+            elif t.type == 'LOAN_REPAY': daily_data[day]['loan_repay'] += t.amount
 
         # Fill in missing days
         result = []
         for i in range(7):
             day = week_start + timedelta(days=i)
-            day_data = next((d for d in daily if d['day'] == day), None)
+            day_stats = daily_data.get(day, {})
             result.append({
                 'day': day.isoformat(),
                 'day_name': day.strftime('%A'),
-                'income': float(day_data['income'] or 0) if day_data else 0,
-                'expense': float(day_data['expense'] or 0) if day_data else 0,
-                'savings_deposit': float(day_data['savings_deposit'] or 0) if day_data else 0,
-                'savings_withdraw': float(day_data['savings_withdraw'] or 0) if day_data else 0,
-                'loan_in': float(day_data['loan_in'] or 0) if day_data else 0,
-                'loan_out': float(day_data['loan_out'] or 0) if day_data else 0,
-                'loan_repay': float(day_data['loan_repay'] or 0) if day_data else 0,
+                'income': float(day_stats.get('income', 0)),
+                'expense': float(day_stats.get('expense', 0)),
+                'savings_deposit': float(day_stats.get('savings_deposit', 0)),
+                'savings_withdraw': float(day_stats.get('savings_withdraw', 0)),
+                'loan_in': float(day_stats.get('loan_in', 0)),
+                'loan_out': float(day_stats.get('loan_out', 0)),
+                'loan_repay': float(day_stats.get('loan_repay', 0)),
             })
 
         totals = {
@@ -76,43 +80,44 @@ class MainBalanceReport:
         else:
             end = date(year, month + 1, 1) - timedelta(days=1)
 
-        daily = Transaction.objects.filter(
-            user=user,
-            date__gte=start,
-            date__lte=end,
-        ).annotate(
-            day=TruncDate('date')
-        ).values('day').annotate(
-            income=Sum('amount', filter=Q(type='INCOME')),
-            expense=Sum('amount', filter=Q(type='EXPENSE')),
-        ).order_by('day')
-
-        totals = Transaction.objects.filter(
-            user=user,
-            date__gte=start,
-            date__lte=end,
-        ).aggregate(
-            income=Sum('amount', filter=Q(type='INCOME')),
-            expense=Sum('amount', filter=Q(type='EXPENSE')),
-            savings_in=Sum('amount', filter=Q(type='SAVINGS_DEPOSIT')),
-            savings_out=Sum('amount', filter=Q(type='SAVINGS_WITHDRAW')),
-            loan_in=Sum('amount', filter=Q(type='LOAN_IN')),
-            loan_out=Sum('amount', filter=Q(type='LOAN_OUT')),
+        txs = Transaction.objects.filter(
+            user=user, date__gte=start, date__lte=end, is_deleted=False
         )
+
+        daily_data = {}
+        totals = {'income': 0.0, 'expense': 0.0, 'savings_in': 0.0, 'savings_out': 0.0, 'loan_in': 0.0, 'loan_out': 0.0}
+
+        for t in txs:
+            day_str = t.date.isoformat()
+            if day_str not in daily_data:
+                daily_data[day_str] = {'income': 0.0, 'expense': 0.0}
+            
+            amt = float(t.amount)
+            if t.type == 'INCOME':
+                daily_data[day_str]['income'] += amt
+                totals['income'] += amt
+            elif t.type == 'EXPENSE':
+                daily_data[day_str]['expense'] += amt
+                totals['expense'] += amt
+            elif t.type == 'SAVINGS_DEPOSIT': totals['savings_in'] += amt
+            elif t.type == 'SAVINGS_WITHDRAW': totals['savings_out'] += amt
+            elif t.type == 'LOAN_IN': totals['loan_in'] += amt
+            elif t.type == 'LOAN_OUT': totals['loan_out'] += amt
+
+        result_daily = []
+        for day_str in sorted(daily_data.keys()):
+            result_daily.append({
+                'day': day_str,
+                'income': daily_data[day_str]['income'],
+                'expense': daily_data[day_str]['expense'],
+            })
 
         return {
             'period': 'monthly',
             'year': year,
             'month': month,
-            'daily': [
-                {
-                    'day': d['day'].isoformat() if d['day'] else None,
-                    'income': float(d['income'] or 0),
-                    'expense': float(d['expense'] or 0),
-                }
-                for d in daily
-            ],
-            'totals': {k: float(v or 0) for k, v in totals.items()},
+            'daily': result_daily,
+            'totals': totals,
         }
 
     @staticmethod
@@ -121,29 +126,34 @@ class MainBalanceReport:
         start = date(year, 1, 1)
         end = date(year, 12, 31)
 
-        monthly = Transaction.objects.filter(
-            user=user,
-            date__gte=start,
-            date__lte=end,
-        ).annotate(
-            month=TruncMonth('date')
-        ).values('month').annotate(
-            income=Sum('amount', filter=Q(type='INCOME')),
-            expense=Sum('amount', filter=Q(type='EXPENSE')),
-        ).order_by('month')
+        txs = Transaction.objects.filter(
+            user=user, date__gte=start, date__lte=end, is_deleted=False
+        )
+
+        monthly_data = {}
+        for m in range(1, 13):
+            month_str = date(year, m, 1).isoformat()
+            monthly_data[m] = {'month': month_str, 'income': 0.0, 'expense': 0.0}
+
+        for t in txs:
+            m = t.date.month
+            amt = float(t.amount)
+            if t.type == 'INCOME':
+                monthly_data[m]['income'] += amt
+            elif t.type == 'EXPENSE':
+                monthly_data[m]['expense'] += amt
+
+        result = []
+        for m in range(1, 13):
+            d = monthly_data[m]
+            d['net'] = d['income'] - d['expense']
+            if d['income'] > 0 or d['expense'] > 0:
+                result.append(d)
 
         return {
             'period': 'yearly',
             'year': year,
-            'monthly': [
-                {
-                    'month': d['month'].isoformat() if d['month'] else None,
-                    'income': float(d['income'] or 0),
-                    'expense': float(d['expense'] or 0),
-                    'net': float((d['income'] or 0) - (d['expense'] or 0)),
-                }
-                for d in monthly
-            ],
+            'monthly': result,
         }
 
 
@@ -199,33 +209,38 @@ class SavingsReport:
         savings_list = Savings.objects.filter(user=user)
         result = []
 
+        all_txs = list(Transaction.objects.filter(
+            user=user, date__gte=start, date__lte=end, is_deleted=False
+        ).filter(
+            Q(type='SAVINGS_DEPOSIT') | Q(type='SAVINGS_WITHDRAW')
+        ))
+
         for s in savings_list:
-            monthly_data = Transaction.objects.filter(
-                user=user,
-                date__gte=start,
-                date__lte=end,
-            ).filter(
-                Q(source_type='SAVINGS', source_id=s.id) |
-                Q(destination_type='SAVINGS', destination_id=s.id)
-            ).annotate(
-                month=TruncMonth('date')
-            ).values('month').annotate(
-                deposits=Sum('amount', filter=Q(type='SAVINGS_DEPOSIT', destination_id=s.id)),
-                withdrawals=Sum('amount', filter=Q(type='SAVINGS_WITHDRAW', source_id=s.id)),
-            ).order_by('month')
+            monthly_data = {m: {'deposits': 0.0, 'withdrawals': 0.0} for m in range(1, 13)}
+
+            for t in all_txs:
+                m = t.date.month
+                amt = float(t.amount)
+                if t.type == 'SAVINGS_DEPOSIT' and t.destination_id == s.id:
+                    monthly_data[m]['deposits'] += amt
+                elif t.type == 'SAVINGS_WITHDRAW' and t.source_id == s.id:
+                    monthly_data[m]['withdrawals'] += amt
+
+            s_monthly = []
+            for m in range(1, 13):
+                d = monthly_data[m]
+                if d['deposits'] > 0 or d['withdrawals'] > 0:
+                    s_monthly.append({
+                        'month': date(year, m, 1).isoformat(),
+                        'deposits': d['deposits'],
+                        'withdrawals': d['withdrawals']
+                    })
 
             result.append({
                 'id': s.id,
                 'name': s.name,
                 'current_amount': float(s.current_amount),
-                'monthly': [
-                    {
-                        'month': d['month'].isoformat() if d['month'] else None,
-                        'deposits': float(d['deposits'] or 0),
-                        'withdrawals': float(d['withdrawals'] or 0),
-                    }
-                    for d in monthly_data
-                ],
+                'monthly': s_monthly,
             })
 
         return {

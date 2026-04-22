@@ -110,19 +110,16 @@ class LoanSerializer(serializers.ModelSerializer):
             'id', 'person_name', 'amount', 'amount_paid',
             'remaining_amount', 'repayment_percent',
             'direction', 'status', 'due_date', 'date', 'note',
-            'destination', 'destination_savings',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'amount_paid', 'status', 'created_at', 'updated_at']
 
 
 class LoanCreateSerializer(serializers.Serializer):
-    """Input serializer for creating loans with destination routing."""
+    """Input serializer for creating loans — always routes to MainBalance."""
     person_name = serializers.CharField(max_length=255)
     amount = serializers.DecimalField(max_digits=15, decimal_places=2)
     direction = serializers.ChoiceField(choices=['INCOMING', 'OUTGOING'])
-    destination = serializers.ChoiceField(choices=['MAIN', 'SAVINGS'], default='MAIN')
-    destination_savings_id = serializers.IntegerField(required=False, allow_null=True)
     due_date = serializers.DateField(required=False, allow_null=True)
     date = serializers.DateField(required=False)
     note = serializers.CharField(required=False, allow_blank=True, default='')

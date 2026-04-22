@@ -9,6 +9,7 @@ import Categories from './pages/Categories'
 import Debts from './pages/Debts'
 import Savings from './pages/Savings'
 import Notifications from './pages/Notifications'
+import AIChat from './pages/AIChat'
 import Layout from './components/Layout'
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/debts" element={<Debts />} />
         <Route path="/savings" element={<Savings />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/ai-chat" element={<AIChat />} />
       </Route>
     </Routes>
   )
