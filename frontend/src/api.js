@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/',
+    // Render'ga yuklaganda ishlaydigan moslashuvchan manzil
+    baseURL: import.meta.env.MODE === 'production' ? '/api/' : 'http://127.0.0.1:8000/api/',
 });
 
 // Request interceptor to add the auth token header to requests
