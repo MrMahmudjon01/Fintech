@@ -85,18 +85,16 @@ class BalanceService:
         old_type = tx.type
 
         # Revert old effect (Basic generic fallback)
-        if old_type in ['INCOME', 'SAVINGS_WITHDRAW', 'LOAN_IN', 'LOAN_REPAY_OUT']: # Things that added money to main balance
-            validate_sufficient_balance(balance, old_amount)
-            balance.total_amount -= old_amount
-        elif old_type in ['EXPENSE', 'SAVINGS_DEPOSIT', 'LOAN_OUT', 'LOAN_REPAY', 'TRANSFER']: # Things that took money
-            balance.total_amount += old_amount
+        old_net_effect = old_amount if old_type in ['INCOME', 'SAVINGS_WITHDRAW', 'LOAN_IN', 'LOAN_REPAY_OUT'] else -old_amount
+        new_net_effect = new_amount if new_type in ['INCOME', 'SAVINGS_WITHDRAW', 'LOAN_IN', 'LOAN_REPAY_OUT'] else -new_amount
 
-        # Apply new effect
-        if new_type in ['INCOME', 'SAVINGS_WITHDRAW', 'LOAN_IN', 'LOAN_REPAY_OUT']:
-            balance.total_amount += new_amount
-        elif new_type in ['EXPENSE', 'SAVINGS_DEPOSIT', 'LOAN_OUT', 'LOAN_REPAY', 'TRANSFER']:
-            validate_sufficient_balance(balance, new_amount)
-            balance.total_amount -= new_amount
+        balance_diff = new_net_effect - old_net_effect
+
+        if balance_diff < 0:
+            validate_sufficient_balance(balance, abs(balance_diff))
+            balance.total_amount -= abs(balance_diff)
+        elif balance_diff > 0:
+            balance.total_amount += balance_diff
 
         balance.save(update_fields=['total_amount', 'updated_at'])
 
@@ -421,24 +419,27 @@ class LoanService:
         balance = BalanceService.get_or_create(user)
 
         if loan.amount_paid > 0:
-            raise ValidationError("To'lov qilingan qarzni miqdorini yoki turini o'zgartirib bo'lmaydi.")
+            if new_direction != loan.direction:
+                raise ValidationError("To'lov qilingan qarzning turini (Oldim/Berdim) o'zgartirib bo'lmaydi.")
+            if new_amount < loan.amount_paid:
+                raise ValidationError(f"Yangi summa to'langan miqdordan ({loan.amount_paid}) kam bo'lishi mumkin emas.")
 
         old_amount = loan.amount
         old_direction = loan.direction
 
         # Revert old effect
-        if old_direction == 'INCOMING':
-            validate_sufficient_balance(balance, old_amount)
-            balance.total_amount -= old_amount
-        elif old_direction == 'OUTGOING':
-            balance.total_amount += old_amount
+        old_net_balance_effect = old_amount if old_direction == 'INCOMING' else -old_amount
+        new_net_balance_effect = new_amount if new_direction == 'INCOMING' else -new_amount
+        
+        balance_diff = new_net_balance_effect - old_net_balance_effect
 
-        # Apply new effect
-        if new_direction == 'INCOMING':
-            balance.total_amount += new_amount
-        elif new_direction == 'OUTGOING':
-            validate_sufficient_balance(balance, new_amount)
-            balance.total_amount -= new_amount
+        if balance_diff < 0:
+            # We are removing money from the balance
+            validate_sufficient_balance(balance, abs(balance_diff))
+            balance.total_amount -= abs(balance_diff)
+        elif balance_diff > 0:
+            # We are adding money to the balance
+            balance.total_amount += balance_diff
 
         balance.save(update_fields=['total_amount', 'updated_at'])
 
