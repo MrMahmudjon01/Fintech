@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Activity, CreditCard, PiggyBank, ChevronLeft, ChevronRight, Wallet, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Activity, CreditCard, PiggyBank, ChevronLeft, ChevronRight, Wallet, TrendingUp, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import { formatMoney } from '../utils/format';
 
@@ -104,8 +105,13 @@ export default function Dashboard() {
     return (
         <div>
             {/* MONTH PICKER */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h1 style={{ margin: 0 }}>Asosiy Panel</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <h1 style={{ margin: 0 }}>Asosiy Panel</h1>
+                    <Link to="/transactions" className="btn-primary" style={{ padding: '8px 16px', textDecoration: 'none', fontSize: '14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Plus size={16} /> Tranzaksiya qo'shish
+                    </Link>
+                </div>
                 <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '8px 20px', borderRadius: '12px' }}>
                     <button onClick={prevMonth} style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>
                         <ChevronLeft size={20} />

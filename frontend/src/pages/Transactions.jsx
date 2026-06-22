@@ -193,9 +193,9 @@ export default function Transactions() {
                     <div>
                         <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Turi</label>
                         <select className="glass-input" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
-                            <option value="EXPENSE">Xarajat (Expense)</option>
-                            <option value="INCOME">Daromad (Income)</option>
-                            <option value="SAVING">Jamg'armaga (Saving)</option>
+                            <option value="EXPENSE">Xarajat</option>
+                            <option value="INCOME">Daromad</option>
+                            <option value="SAVING">Jamg'armaga</option>
                         </select>
                     </div>
 
@@ -217,7 +217,7 @@ export default function Transactions() {
                             <select className="glass-input" value={form.category} onChange={e => setForm({...form, category: e.target.value})} required={form.type !== 'SAVING'}>
                                 <option value="">Tanlang...</option>
                                 {categories.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name} ({c.type === 'INCOME' ? 'Daromad' : 'Xarajat'})</option>
+                                    <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
                             </select>
                         </div>
@@ -307,8 +307,8 @@ export default function Transactions() {
                             <div>
                                 <label style={{ display: 'block', fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Turi</label>
                                 <select className="glass-input" value={editForm.type} onChange={e => setEditForm({...editForm, type: e.target.value})}>
-                                    <option value="EXPENSE">Xarajat (Expense)</option>
-                                    <option value="INCOME">Daromad (Income)</option>
+                                    <option value="EXPENSE">Xarajat</option>
+                                    <option value="INCOME">Daromad</option>
                                 </select>
                             </div>
 
