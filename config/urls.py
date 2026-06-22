@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/auth/', include('apps.users.urls')),
     path('api/finance/', include('apps.finance.urls')),
     path('api/analytics/', include('apps.analytics.urls')),
-    #path('webhook/', telegram_webhook, name='webhook'),
+    path('telegram/', include('apps.telegram.urls')),
     
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

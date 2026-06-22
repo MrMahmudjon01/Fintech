@@ -593,15 +593,15 @@ async def handle_keyboard_commands(update: Update, context: ContextTypes.DEFAULT
 
 
 # ─────────────────────────────────────────────────────────
-# BOT RUNNER
+# BOT INITIALIZATION
 # ─────────────────────────────────────────────────────────
 
-def run_bot():
-    """Bot runner function."""
+def get_application():
+    """Build and return telegram Application without running it."""
     token = getattr(settings, 'TELEGRAM_BOT_TOKEN', None)
     if not token or token == "YOUR_BOT_TOKEN":
         print("TELEGRAM_BOT_TOKEN sozlanmagan!")
-        return
+        return None
 
     app = ApplicationBuilder().token(token).build()
 
@@ -617,21 +617,17 @@ def run_bot():
             CommandHandler("cancel", cancel),
         ],
         allow_reentry=True,
-        # This ensures ConversationHandler takes priority
         per_message=False,
     )
 
-    # Register all handlers in the correct order
     app.add_handler(conv_handler)
 
-    # Keyboard button handler — MUST come before unknown handler
     keyboard_filter = filters.Regex(
         "^(💰 Balans|🎯 Jamg'armalar|💳 Qarzlar|📊 Umumiy holat"
         "|📈 Haftalik hisobot|📥 Excel hisobotlar|📋 Oxirgi tranzaksiyalar)$"
     )
     app.add_handler(MessageHandler(keyboard_filter, handle_keyboard_commands))
 
-    # Command handlers
     app.add_handler(CommandHandler("balance", balance))
     app.add_handler(CommandHandler("savings", savings_cmd))
     app.add_handler(CommandHandler("loans", loans_cmd))
@@ -640,9 +636,13 @@ def run_bot():
     app.add_handler(CommandHandler("export", export_menu))
     app.add_handler(CommandHandler("transactions", transactions_cmd))
     app.add_handler(CommandHandler("help", help_cmd))
-
-    # Callback handler for export inline buttons
     app.add_handler(CallbackQueryHandler(handle_export_callback))
 
-    print("✅ Telegram bot ishga tushdi...")
-    app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    return app
+
+def run_bot():
+    """Run bot in polling mode."""
+    app = get_application()
+    if app:
+        print("✅ Telegram bot ishga tushdi (Polling)...")
+        app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)

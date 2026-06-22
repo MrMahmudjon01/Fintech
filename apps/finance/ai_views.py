@@ -529,11 +529,14 @@ Salbiy balans yoki ortiqcha xarajat bo'lsa, muloyimlik bilan ogohlantir."""
         if not message:
             return Response({'error': 'Xabar bo\'sh'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # API kalitni aniqlash: user kaliti ustunlik qiladi, yo'q bo'lsa default
+        # Faqat user o'zi bergan kalitni ishlatamiz.
+        # Agar server GEMINI_API_KEY ni ham qo'llab-quvvatlashi kerak bo'lsa,
+        # .env ga GEMINI_API_KEY qo'shing — bo'sh bo'lsa lokal AI ishlaydi.
         user_key = request.META.get('HTTP_X_GEMINI_KEY', '').strip()
-        default_key = getattr(settings, 'GEMINI_API_KEY', '')
+        server_key = getattr(settings, 'GEMINI_API_KEY', '').strip()
         
-        api_key = user_key if user_key else default_key
+        # User kaliti ustunlik qiladi; yo'q bo'lsa server kaliti (ixtiyoriy); ikkalasi ham yo'q — lokal AI
+        api_key = user_key or server_key
         
         # User moliyaviy kontekstini olish
         try:

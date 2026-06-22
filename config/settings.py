@@ -1,16 +1,22 @@
 """
-Django settings for config project.
+Django settings for FinX project.
+Barcha maxfiy tokenlar .env fayldan o'qiladi.
 """
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
+# .env faylini yuklash
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = 'django-insecure-change-this-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+# ── Security ──────────────────────────────────────────────────────────────────
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
+# ── Installed Apps ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,22 +24,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
     'corsheaders',
-    
+
     'apps.users',
     'apps.finance',
     'apps.analytics',
     'apps.telegram',
 ]
 
-# Telegram settings
-TELEGRAM_BOT_TOKEN = '8765947355:AAFUZUQF2S3gEXR4V56mHSua7xRo3gmZx8M'
-
+# ── Middleware ─────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -65,17 +69,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# ── Database ───────────────────────────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'finai',      # Yuqorida yaratilgan baza nomi
-        'USER': 'superuser',    # Yuqorida yaratilgan user
-        'PASSWORD': 'finAI123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'finai'),
+        'USER': os.getenv('DB_USER', 'superuser'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
+# ── Auth ───────────────────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -83,18 +89,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
+# ── Internationalization ───────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# ── Static files ───────────────────────────────────────────────────────────────
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom Auth User Model
-AUTH_USER_MODEL = 'users.User'
-
-# Rest Framework settings
+# ── REST Framework ─────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -104,7 +112,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS Config
+# ── CORS ───────────────────────────────────────────────────────────────────────
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -113,7 +121,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-gemini-key",
 ]
 
-# Simple JWT settings
+# ── Simple JWT ─────────────────────────────────────────────────────────────────
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -124,16 +132,18 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# Email configurations
+# ── Email ──────────────────────────────────────────────────────────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'jshoxruh05@gmail.com'
-EMAIL_HOST_PASSWORD = 'eecn bxnd cnlt bupz'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
-# Telegram Bot Token
-TELEGRAM_BOT_TOKEN = '8765947355:AAFUZUQF2S3gEXR4V56mHSua7xRo3gmZx8M'
+# ── Telegram Bot ───────────────────────────────────────────────────────────────
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 
-# Gemini AI — Default API key (har bir user o'z kalitini ham qo'sha oladi)
-GEMINI_API_KEY = 'AIzaSyCP5maitknYzuJlFyYUezRLy-Eys63J8MI'
+# ── Gemini AI ──────────────────────────────────────────────────────────────────
+# Gemini API key olib tashlandi — foydalanuvchi o'z kalitini brauzerda saqlab ishlatadi
+# Yoki GEMINI_API_KEY ni .env ga qo'shsa, server orqali ishlatiladi (ixtiyoriy)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
