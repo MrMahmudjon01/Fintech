@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { KeyRound, Phone } from 'lucide-react';
+import { KeyRound, Phone, Eye, EyeOff } from 'lucide-react';
 import api from '../api';
 
 export default function Login() {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -45,14 +46,21 @@ export default function Login() {
                     <div style={{ position: 'relative' }}>
                         <KeyRound size={20} style={{ position: 'absolute', top: '12px', left: '12px', color: 'var(--text-muted)' }} />
                         <input 
-                            type="password" 
+                            type={showPassword ? "text" : "password"}
                             className="glass-input" 
-                            style={{ paddingLeft: '40px' }} 
+                            style={{ paddingLeft: '40px', paddingRight: '40px' }} 
                             placeholder="Parol"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <button 
+                            type="button" 
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Link to="/reset-password" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '14px' }}>Parolni unutdingizmi?</Link>

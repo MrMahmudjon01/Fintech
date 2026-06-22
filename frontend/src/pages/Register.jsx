@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Phone, User, Lock, Mail, KeyRound } from 'lucide-react';
+import { Phone, User, Lock, Mail, KeyRound, Eye, EyeOff } from 'lucide-react';
 import api from '../api';
 
 export default function Register() {
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     // Form data
@@ -83,8 +84,15 @@ export default function Register() {
                         </div>
                         <div style={{ position: 'relative' }}>
                             <Lock size={20} style={{ position: 'absolute', top: '12px', left: '12px', color: 'var(--text-muted)' }} />
-                            <input type="password" className="glass-input" style={{ paddingLeft: '40px' }} placeholder="Parol (min 6 harf)" required
+                            <input type={showPassword ? "text" : "password"} className="glass-input" style={{ paddingLeft: '40px', paddingRight: '40px' }} placeholder="Parol (min 6 harf)" required
                                 value={formData.password} onChange={(e) => updateForm('password', e.target.value)} />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
                         <button type="submit" className="btn-primary">Davom etish</button>
                     </form>
