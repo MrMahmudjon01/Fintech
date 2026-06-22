@@ -11,6 +11,7 @@ from .serializers import (
     ForgotPasswordStartSerializer, ForgotPasswordConfirmSerializer
 )
 from .services import generate_otp, send_otp_email, hash_password, get_otp_expiration
+import threading
 
 class RegisterStartView(APIView):
     permission_classes = [AllowAny]
@@ -50,7 +51,15 @@ class RegisterVerifyView(APIView):
             pending_user.expires_at = get_otp_expiration()
             pending_user.save()
             
-            send_otp_email(email=email, otp=otp)
+            # Emailni asinxron (orqa fonda) yuborish, shunda tizim qotib qolmaydi
+            def send_email_async():
+                try:
+                    send_otp_email(email=email, otp=otp)
+                except Exception as e:
+                    print(f"Xat jo'natishda xatolik yuz berdi ({email}): {e}")
+            
+            threading.Thread(target=send_email_async).start()
+            print(f"YANGI KOD (Register): {phone_number} uchun kod: {otp}")
             
             return Response({"message": "OTP sent to email. Proceed to confirm."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
